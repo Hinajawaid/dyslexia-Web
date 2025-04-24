@@ -1,5 +1,7 @@
 "use client";
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
+import axios from "axios";
 import googleImg from "../../../assets/signIn/ri_google-fill.png";
 import Image from "next/image";
 // import background_img from "../../assets/signIn/signin_background1.jpg";
@@ -10,6 +12,56 @@ import { Button } from "@/components/ui/Button";
 export default function Signin() {
   const [errors, setErrors] = useState(false);
   const [loading, setLoading] = useState(null);
+  const [formData, setformData] = useState({
+    email: "",
+    password: "",
+  });
+  const router = useRouter();
+
+  const handleChange = (e) => {
+    setformData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setErrors({});
+    setLoading(true);
+
+    console.log(formData);
+    try {
+      const response = await axios.post(
+        "http://localhost:4000/user/login",
+        formData
+      );
+      if (response.status === 200) {
+        localStorage.setItem("token", response.data.token);
+        alert("user logged in");
+        router.push("/dashboard");
+      }
+    } catch (error) {
+      setLoading(false);
+      console.error("Login Error:", error);
+
+      if (error.response) {
+        // Log the full error response for debugging
+        console.log("Error Response:", error.response);
+
+        if (error.response.status === 400) {
+          setErrors(error.response.data.errors || {});
+        } else {
+          alert("Invalid credentials or server error. Please try again.");
+        }
+      } else if (error.request) {
+        alert("No response from server. Please check your connection.");
+      } else {
+        alert("Request failed. Please try again.");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <>
@@ -39,6 +91,7 @@ export default function Signin() {
                   type="text"
                   name="email"
                   placeholder="Email"
+                  onChange={handleChange}
                   className={`w-full font-poppoin p-3 border rounded-lg outline-none focus:ring-2 focus:ring-purple-500 ${
                     errors.email ? "border-red-500" : "border-gray-300"
                   }`}
@@ -59,6 +112,7 @@ export default function Signin() {
                   type="password"
                   name="password"
                   placeholder="Password"
+                  onChange={handleChange}
                   className={`w-full font-poppoin p-3 border rounded-lg outline-none focus:ring-2 focus:ring-purple-500 ${
                     errors.password ? "border-red-500" : "border-gray-300"
                   }`}
@@ -71,6 +125,7 @@ export default function Signin() {
               {/* Sign In Button */}
               <div className="mt-6">
                 <button
+                  onClick={handleSubmit}
                   type="submit"
                   className="w-full py-3 font-poppoin text-white bg-dyslexia-purple rounded-lg hover:bg-purple-700 focus:ring-2 focus:ring-purple-500 focus:outline-none"
                 >
