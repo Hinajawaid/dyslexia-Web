@@ -37,7 +37,7 @@ export default function AdminPage() {
       });
 
       // API call to the backend
-      const response = await fetch("http://10.113.87.207:5000/spelling/save", {
+      const response = await fetch("http://192.168.1.75:5000/spelling/save", {
         method: "POST",
         body: formData,
       });
