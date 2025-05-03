@@ -1,7 +1,7 @@
 import Sidebar from "../../components/Sidebar";
 // Removed Header/Footer imports
 
-export default function Dashboard() {
+export default function Help() {
   // Restored old inline styles definitions
   const mainContentStyle = {
     flexGrow: 1,
@@ -25,15 +25,14 @@ export default function Dashboard() {
   return (
     // Reverted layout structure
     <div style={{ display: "flex", minHeight: "100vh" }}>
-      <Sidebar /> {/* No initialActiveIndex needed due to internal handling */}
+      <Sidebar />
       <div style={mainContentStyle}>
-        <h1 style={mainHeaderStyle}>Dashboard</h1> {/* Use correct H1 text */}
+        <h1 style={mainHeaderStyle}>Help & Support</h1>
         <p style={paragraphStyle}>
-          Welcome to your DyslexiAid Dashboard!
-          {/* Add more dashboard components/content here */}
+          Find answers to your questions and support information here.
+          {/* Add more Help components/content here, e.g., FAQs, contact form */}
         </p>
       </div>
-      {/* Removed Footer */}
     </div>
   );
 }

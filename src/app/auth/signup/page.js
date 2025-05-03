@@ -178,7 +178,7 @@ export default function Signup() {
       console.log(inputData);
 
       const response = await axios.post(
-        "http://localhost:4000/user/register",
+        "http://192.168.1.75:4000/user/register",
         formData,
         {
           headers: {
