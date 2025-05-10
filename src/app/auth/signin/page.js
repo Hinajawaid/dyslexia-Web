@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import googleImg from "../../../assets/signIn/ri_google-fill.png";
@@ -24,20 +24,28 @@ export default function Signin() {
       [e.target.name]: e.target.value,
     });
   };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrors({});
     setLoading(true);
 
-    console.log(formData);
+    console.log(formData); // Log the form data
+
     try {
       const response = await axios.post(
-        "http://192.168.1.75:4000/user/login",
+        "http://192.168.1.75:4000/user/login", // Login endpoint
         formData
       );
+
       if (response.status === 200) {
+        // Store the token in localStorage for session management
         localStorage.setItem("token", response.data.token);
-        alert("user logged in");
+
+        // Optionally, you can add user information here if needed
+        alert("User logged in successfully");
+
+        // Redirect the user to the dashboard
         router.push("/dashboard");
       }
     } catch (error) {
@@ -49,9 +57,10 @@ export default function Signin() {
         console.log("Error Response:", error.response);
 
         if (error.response.status === 400) {
-          setErrors(error.response.data.errors || {});
+          // If credentials are invalid, set the error message
+          setErrors({ message: "Invalid credentials, please try again." });
         } else {
-          alert("Invalid credentials or server error. Please try again.");
+          alert("An error occurred. Please try again.");
         }
       } else if (error.request) {
         alert("No response from server. Please check your connection.");

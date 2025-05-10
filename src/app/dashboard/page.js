@@ -1,4 +1,6 @@
 import Sidebar from "../../components/Sidebar";
+import Header from "../../components/Header";
+
 // Removed Header/Footer imports
 
 export default function Dashboard() {
@@ -24,16 +26,26 @@ export default function Dashboard() {
 
   return (
     // Reverted layout structure
-    <div style={{ display: "flex", minHeight: "100vh" }}>
-      <Sidebar /> {/* No initialActiveIndex needed due to internal handling */}
-      <div style={mainContentStyle}>
-        <h1 style={mainHeaderStyle}>Dashboard</h1> {/* Use correct H1 text */}
-        <p style={paragraphStyle}>
-          Welcome to your DyslexiAid Dashboard!
-          {/* Add more dashboard components/content here */}
-        </p>
+    <div className="flex h-screen overflow-hidden bg-[#EDF6F7]">
+      {/* Light theme background */}
+      {/* Sticky Sidebar */}
+      <Sidebar />
+      {/* Main Area (Header + Scrollable Content) */}
+      <div className="flex flex-col flex-1 overflow-hidden">
+        {/* Header */}
+        <Header />
+        {/* Scrollable Content Area */}
+        <main className="flex-1 flex-row overflow-y-auto scrollbar-hide p-6 mt-2">
+          {" "}
+          {/* Primary scroll area */}
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-6 pb-4 border-b-2 border-[#5D3587]">
+            Dashboard
+          </h1>
+          <div className="flex flex-col items-center justify-center">
+            <h1>Welcome to DyslexiAid</h1>
+          </div>
+        </main>
       </div>
-      {/* Removed Footer */}
     </div>
   );
 }

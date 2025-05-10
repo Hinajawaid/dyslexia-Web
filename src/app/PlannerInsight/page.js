@@ -1,11 +1,20 @@
+"use client";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import Sidebar from "../../components/Sidebar"; // Import the new Sidebar component
 import Header from "../../components/Header";
 import Planner from "../../components/Planner";
 
 export default function PlannerInsight() {
   // Example data for the Planner component
+  const [loading, setLoading] = useState(true);
+  const [plannerData1, setPlannerData1] = useState([]);
+  const [completedTasks, setCompletedTasks] = useState([]);
+  const [incompleteTasks, setIncompleteTasks] = useState([]);
+  const [percentage, setPercentage] = useState(0);
   const plannerData = {
     percentage: 72,
+
     completedTasks: [
       { name: "Task 1", description: "Complete chapter 5 reading." },
       { name: "Task 2", description: "Practice spelling words." },
@@ -23,6 +32,61 @@ export default function PlannerInsight() {
       { name: "Task 6", description: "Planner check-in." },
     ],
   };
+
+  const calculateCompletionPercentage = (tasks) => {
+    if (!tasks.length) return 0;
+    const completedCount = tasks.filter((task) => task.completed).length;
+    return Math.round((completedCount / tasks.length) * 100);
+  };
+
+  useEffect(() => {
+    const fetchPlannerData = async () => {
+      console.log("Fetching planner data...");
+      const token = localStorage.getItem("token");
+      console.log("Token:", token);
+
+      if (!token) {
+        console.error("No token found in localStorage.");
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const response = await axios.get(
+          "http://192.168.1.75:4000/planner/gettask",
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        console.log("planner Data:", response.data.data.todos);
+        setPlannerData1(response.data.data.todos);
+
+        const tasks = response.data.data.todos;
+
+        // Separate completed and incomplete tasks
+        const completed = tasks.filter((task) => task.completed);
+        const incomplete = tasks.filter((task) => !task.completed);
+
+        // Save separated arrays
+        setCompletedTasks(completed);
+        setIncompleteTasks(incomplete);
+
+        setPercentage(calculateCompletionPercentage(tasks));
+      } catch (error) {
+        console.error("Error fetching game data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPlannerData();
+    // setLevelData();
+  }, []);
+
   const mainContentStyle = {
     flexGrow: 1,
     padding: "2.5rem", // ~40px
@@ -64,9 +128,9 @@ export default function PlannerInsight() {
           </h1>
           {/* Planner Insight Section - Now uses the Planner component */}
           <Planner
-            percentage={plannerData.percentage}
-            completedTasks={plannerData.completedTasks}
-            incompleteTasks={plannerData.incompleteTasks}
+            percentage={percentage}
+            completedTasks={completedTasks}
+            incompleteTasks={incompleteTasks}
           />
           {/* {renderContent()} */}
         </main>

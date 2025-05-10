@@ -1,15 +1,26 @@
 "use client";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import Sidebar from "../../components/Sidebar";
 import Header from "../../components/Header";
-import { useState } from "react";
 import Planner from "../../components/Planner";
 
 // Placeholder imports - replace with your actual components
-const PieChart = ({ percentage }) => {
+const PieChart = ({ correctWordsArr = [], totalQuestions = 1 }) => {
+  console.log("correctWordsArr", correctWordsArr);
+  console.log("totalQuestions", totalQuestions);
+  if (correctWordsArr[0] == "") {
+    correctWordsArr = [];
+  }
+  // Avoid division by zero
+  const percentage =
+    totalQuestions > 0
+      ? Math.round((correctWordsArr.length / totalQuestions) * 100)
+      : 0;
+  console.log("length", correctWordsArr.length, percentage);
   const gradientStyle = {
-    // backgroundImage: `conic-gradient(#3b82f6 ${percentage * 3.6}deg, #e5e7eb ${percentage * 3.6}deg)`,
-    backgroundImage: `conic-gradient(#FF0066 0deg, #6A0DAD ${percentage * 3.6}deg, #e5e7eb ${percentage * 3.6}deg)`, // Pink -> Purple gradient -> Gray
-    borderRadius: "50%", // Ensure it's a circle
+    backgroundImage: `conic-gradient(#FF0066 0deg, #6A0DAD ${percentage * 3.6}deg, #e5e7eb ${percentage * 3.6}deg)`,
+    borderRadius: "50%",
   };
 
   return (
@@ -17,14 +28,14 @@ const PieChart = ({ percentage }) => {
       className="w-32 h-32 rounded-full flex items-center justify-center relative"
       style={gradientStyle}
     >
-      {/* Inner div to create the donut hole */}
+      {/* Donut hole */}
       <div className="absolute w-[85%] h-[85%] bg-[#EDF6F7] rounded-full flex items-center justify-center">
         <span className="text-lg font-semibold">{percentage}%</span>
       </div>
-      {/* <span className="absolute -bottom-4 text-xs text-gray-500">Completed</span> */}
     </div>
   );
 };
+
 // const gradientStyle = {
 //   backgroundImage: `conic-gradient(#FF0066 0deg, #6A0DAD ${percentage * 3.6}deg, #e5e7eb ${percentage * 3.6}deg)`, // Pink -> Purple gradient -> Gray
 //   borderRadius: "50%", // Ensure it's a circle
@@ -63,7 +74,144 @@ const WrongAnswersList = ({ title, items }) => {
 };
 
 export default function GameInsight() {
+  const [gameData, setGameData] = useState(null);
+  const [level1Data, setLevel1Data] = useState(null);
+  const [level2Data, setLevel2Data] = useState(null);
+  const [level3Data, setLevel3Data] = useState(null);
+  const [phonicsGameData, setPhonicsGameData] = useState(null);
+  const [level1PhonicsData, setLevel1PhonicsData] = useState(null);
+  const [level2PhonicsData, setLevel2PhonicsData] = useState(null);
+  const [loading, setLoading] = useState(true); // Loading state
+
   // Restored old inline styles definitions
+
+  useEffect(() => {
+    const fetchGameData = async () => {
+      console.log("Fetching game data...");
+      const token = localStorage.getItem("token");
+      console.log("Token:", token);
+
+      if (!token) {
+        console.error("No token found in localStorage.");
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const response = await axios.get(
+          "http://192.168.1.75:4000/game/getGamebyId",
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        console.log("Game Data:", response.data.data);
+        setGameData(response.data.data); // Save the data for rendering
+
+        const level1 = response.data.data.find((item) => item.level === 1);
+        const level2 = response.data.data.find((item) => item.level === 2);
+        const level3 = response.data.data.find((item) => item.level === 3);
+
+        console.log("Level 1 Data:", level1);
+        console.log("Level 2 Data:", level2);
+        console.log("Level 3 Data:", level3);
+
+        setLevel1Data(level1);
+        setLevel2Data(level2);
+        setLevel3Data(level3);
+      } catch (error) {
+        console.error("Error fetching game data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const setLevelData = async () => {
+      const level1 = gameData.find((item) => item.level === 1);
+      const level2 = gameData.find((item) => item.level === 2);
+      const level3 = gameData.find((item) => item.level === 3);
+
+      console.log("Level 1 Data:", level1);
+      console.log("Level 2 Data:", level2);
+      console.log("Level 3 Data:", level3);
+
+      setLevel1Data(level1);
+      setLevel2Data(level2);
+      setLevel3Data(level3);
+    };
+    const fetchPhonicsGameData = async () => {
+      console.log("Fetching phonics game data...");
+      const token = localStorage.getItem("token");
+      console.log("Token:", token);
+
+      if (!token) {
+        console.error("No token found in localStorage.");
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const response = await axios.get(
+          "http://192.168.1.75:4000/phonicsGame/getPhonicsGamebyId",
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        console.log("phonics Game Data:", response.data.data);
+        setPhonicsGameData(response.data.data); // Save the data for rendering
+
+        const level1 = response.data.data.find((item) => item.level === 1);
+        const level2 = response.data.data.find((item) => item.level === 2);
+
+        console.log(" phonics Level 1 Data:", level1);
+        console.log(" phonics Level 2 Data:", level2);
+
+        setLevel1PhonicsData(level1);
+        setLevel2PhonicsData(level2);
+      } catch (error) {
+        console.error("Error fetching phonics game data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchGameData();
+    fetchPhonicsGameData();
+    // setLevelData();
+  }, []);
+
+  // useEffect(() => {
+  //   if (gameData && Array.isArray(gameData)) {
+  //     const level1 = gameData.find((item) => item.level === 1);
+  //     const level2 = gameData.find((item) => item.level === 2);
+  //     const level3 = gameData.find((item) => item.level === 3);
+
+  //     console.log("Level 1 Data:", level1);
+  //     console.log("Level 2 Data:", level2);
+  //     console.log("Level 3 Data:", level3);
+
+  //     setLevel1Data(level1);
+  //     setLevel2Data(level2);
+  //     setLevel3Data(level3);
+  //   }
+  // }, [gameData]);
+
+  // Don't render the UI until the data is fetched
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="spinner"></div>{" "}
+        {/* Add your own spinner or loading component */}
+      </div>
+    );
+  }
 
   return (
     // Overall container
@@ -93,35 +241,37 @@ export default function GameInsight() {
                   {/* Level 1 */}
                   <div className="flex flex-col items-center">
                     <h3 className="font-medium mb-2">Level 1</h3>
-                    <PieChart percentage={0} />
+                    <PieChart
+                      correctWordsArr={level1Data?.correctWordsArr || []}
+                      totalQuestions={level1Data?.totalQuestion || 0}
+                    />{" "}
                     <WrongAnswersList
                       title="Wrong words"
-                      items={["Hi", "An", "Is"]}
+                      items={level1Data?.wrongWordsArr || []}
                     />
                   </div>
                   {/* Level 2 */}
                   <div className="flex flex-col items-center">
                     <h3 className="font-medium mb-2">Level 2</h3>
-                    <PieChart percentage={54} />
+                    <PieChart
+                      correctWordsArr={level2Data?.correctWordsArr || []}
+                      totalQuestions={level2Data?.totalQuestion || 0}
+                    />{" "}
                     <WrongAnswersList
                       title="Wrong words"
-                      items={["Apple", "Ant", "Here"]}
+                      items={level2Data?.wrongWordsArr || []}
                     />
                   </div>
                   {/* Level 3 */}
                   <div className="flex flex-col items-center">
                     <h3 className="font-medium mb-2">Level 3</h3>
-                    <PieChart percentage={39} />
+                    <PieChart
+                      correctWordsArr={level3Data?.correctWordsArr || []}
+                      totalQuestions={level3Data?.totalQuestion || 0}
+                    />{" "}
                     <WrongAnswersList
                       title="Wrong words"
-                      items={[
-                        "Banana",
-                        "Butterfly",
-                        "Crocodile",
-                        "Banana",
-                        "Butterfly",
-                        "Crocodile",
-                      ]}
+                      items={level3Data?.wrongWordsArr || []}
                     />
                   </div>
                 </div>
@@ -136,19 +286,25 @@ export default function GameInsight() {
                   {/* Level 1 */}
                   <div className="flex flex-col items-center">
                     <h3 className="font-medium mb-2">Level 1</h3>
-                    <PieChart percentage={77} />
+                    <PieChart
+                      correctWordsArr={level1PhonicsData?.correctWordsArr || []}
+                      totalQuestions={level1PhonicsData?.totalQuestion || 0}
+                    />
                     <WrongAnswersList
                       title="Wrong Answers"
-                      items={["A", "C", "X"]}
+                      items={level1PhonicsData?.wrongWordsArr || []}
                     />
                   </div>
                   {/* Level 2 */}
                   <div className="flex flex-col items-center">
                     <h3 className="font-medium mb-2">Level 2</h3>
-                    <PieChart percentage={54} />
+                    <PieChart
+                      correctWordsArr={level2PhonicsData?.correctWordsArr || []}
+                      totalQuestions={level2PhonicsData?.totalQuestion || 0}
+                    />
                     <WrongAnswersList
                       title="Wrong Answers"
-                      items={["CH", "Ai", "OU"]}
+                      items={level2PhonicsData?.wrongWordsArr || []}
                     />
                   </div>
                 </div>
