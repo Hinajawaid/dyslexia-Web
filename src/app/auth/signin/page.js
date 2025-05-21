@@ -34,7 +34,7 @@ export default function Signin() {
 
     try {
       const response = await axios.post(
-        "http://192.168.1.75:4000/user/login", // Login endpoint
+        "http://localhost:4000/user/login", // Login endpoint
         formData
       );
 
